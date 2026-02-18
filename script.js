@@ -20,14 +20,14 @@ function fixMobileLayout() {
         rail.style.zIndex = '9999';
         rail.style.overflowY = 'auto';
     } else {
-        // Desktop: move rail back inside container, clear inline styles
+        // Desktop: move rail back inside container, align with scroller
         const container = document.querySelector('.app-container');
         if (rail.parentElement !== container) {
             container.appendChild(rail);
         }
         rail.style.position = '';
         rail.style.right = '';
-        rail.style.top = '';
+        rail.style.top = header.offsetHeight + 'px';
         rail.style.bottom = '';
         rail.style.height = '';
         rail.style.zIndex = '';
