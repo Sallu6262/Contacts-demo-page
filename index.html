@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Search | HCI Assignment</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Decorative blobs behind the card -->
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+
+        <header class="search-header">
+            <div class="title-row">
+                <h1>Contacts</h1>
+                <span class="badge" id="total-badge">100</span>
+            </div>
+            <div class="search-wrapper">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="search-input" placeholder="Search contacts..." autocomplete="off">
+                <button id="clear-btn" class="clear-btn hidden" aria-label="Clear search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div id="status-bar" class="status-bar">
+                <span id="count-display">Loading...</span>
+                <span class="shortcut-hint" id="shortcut-hint">Press <kbd>/</kbd> to search</span>
+            </div>
+        </header>
+
+        <!-- Alphabet quick-jump sidebar -->
+        <nav class="alpha-rail" id="alpha-rail"></nav>
+
+        <main class="list-container" id="list-container">
+            <ul id="word-list"></ul>
+
+            <div id="empty-state" class="empty-state hidden">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                </div>
+                <p class="empty-title">No results found</p>
+                <p class="empty-sub">Try a different keyword</p>
+            </div>
+        </main>
+
+        <!-- Scroll-to-top button -->
+        <button id="scroll-top-btn" class="scroll-top-btn hidden" aria-label="Scroll to top">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        </button>
+
+        <!-- Toast notification -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
