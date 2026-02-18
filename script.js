@@ -1,3 +1,43 @@
+// 0. VIEWPORT HEIGHT FIX FOR MOBILE
+// On mobile, move the alpha-rail outside .app-container so we can use
+// position:fixed against the real viewport (backdrop-filter on the
+// container breaks fixed positioning when the rail is inside it).
+function fixMobileLayout() {
+    const rail = document.getElementById('alpha-rail');
+    const header = document.querySelector('.search-header');
+    if (!rail || !header) return;
+
+    if (window.innerWidth <= 600) {
+        // Move rail to body so position:fixed works correctly
+        if (rail.parentElement !== document.body) {
+            document.body.appendChild(rail);
+        }
+        rail.style.position = 'fixed';
+        rail.style.right = '2px';
+        rail.style.top = header.getBoundingClientRect().bottom + 'px';
+        rail.style.bottom = '0px';
+        rail.style.height = '';
+        rail.style.zIndex = '9999';
+        rail.style.overflowY = 'auto';
+    } else {
+        // Desktop: move rail back inside container, clear inline styles
+        const container = document.querySelector('.app-container');
+        if (rail.parentElement !== container) {
+            container.appendChild(rail);
+        }
+        rail.style.position = '';
+        rail.style.right = '';
+        rail.style.top = '';
+        rail.style.bottom = '';
+        rail.style.height = '';
+        rail.style.zIndex = '';
+        rail.style.overflowY = '';
+    }
+}
+window.addEventListener('load', fixMobileLayout);
+setTimeout(fixMobileLayout, 100);
+window.addEventListener('resize', fixMobileLayout);
+
 // 1. DATA: Hardcoded list of 100 technical/HCI words (A–U coverage)
 const database = [
     "Affordance", "Algorithm", "Animation", "API", "Application", "Array", "Authentication", "Automation",
