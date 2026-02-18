@@ -1,13 +1,19 @@
 // 0. VIEWPORT HEIGHT FIX FOR MOBILE
-// On mobile, move the alpha-rail outside .app-container so we can use
-// position:fixed against the real viewport (backdrop-filter on the
-// container breaks fixed positioning when the rail is inside it).
+// On mobile, 100vh includes the browser chrome (address bar, nav bar)
+// so the container extends below the visible area. We fix this by
+// setting the container height to window.innerHeight (the real visible
+// height). We also move the alpha-rail outside .app-container because
+// backdrop-filter breaks position:fixed for children.
 function fixMobileLayout() {
     const rail = document.getElementById('alpha-rail');
     const header = document.querySelector('.search-header');
-    if (!rail || !header) return;
+    const container = document.querySelector('.app-container');
+    if (!rail || !header || !container) return;
 
     if (window.innerWidth <= 600) {
+        // Fix container height to actual visible viewport
+        container.style.height = window.innerHeight + 'px';
+
         // Move rail to body so position:fixed works correctly
         if (rail.parentElement !== document.body) {
             document.body.appendChild(rail);
@@ -20,8 +26,9 @@ function fixMobileLayout() {
         rail.style.zIndex = '9999';
         rail.style.overflowY = 'auto';
     } else {
-        // Desktop: move rail back inside container, align with scroller
-        const container = document.querySelector('.app-container');
+        // Desktop: restore container height, move rail back inside
+        container.style.height = '';
+
         if (rail.parentElement !== container) {
             container.appendChild(rail);
         }
