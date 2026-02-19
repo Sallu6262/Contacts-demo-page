@@ -91,6 +91,50 @@ function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+// 3b. HELPER: In-order fuzzy match
+// Returns array of matched character indices if all query chars appear
+// in order inside the word, or null if no match.
+// E.g. fuzzyMatch("Framework", "fw") => [0, 5]
+function fuzzyMatch(word, query) {
+    const wordLower = word.toLowerCase();
+    const queryLower = query.toLowerCase();
+    let qi = 0;
+    const matched = [];
+
+    for (let wi = 0; wi < wordLower.length && qi < queryLower.length; wi++) {
+        if (wordLower[wi] === queryLower[qi]) {
+            matched.push(wi);
+            qi++;
+        }
+    }
+    return qi === queryLower.length ? matched : null;
+}
+
+// 3c. HELPER: Build highlighted HTML from fuzzy match indices
+// Groups consecutive matched indices into single <span> blocks.
+function highlightFuzzy(word, indices) {
+    let result = '';
+    let pos = 0;
+
+    for (let i = 0; i < indices.length; i++) {
+        const start = indices[i];
+        // Find end of consecutive run
+        let end = start;
+        while (i + 1 < indices.length && indices[i + 1] === end + 1) {
+            end++;
+            i++;
+        }
+        // Text before this match
+        if (start > pos) result += word.slice(pos, start);
+        // Highlighted match
+        result += `<span class="highlight">${word.slice(start, end + 1)}</span>`;
+        pos = end + 1;
+    }
+    // Remaining text after last match
+    if (pos < word.length) result += word.slice(pos);
+    return result;
+}
+
 // ============================================================
 // 4. SOUND EFFECTS (Web Audio API — no external files needed)
 // ============================================================
@@ -204,20 +248,27 @@ function getScrollPosition(target, container) {
 function renderList(query = '') {
     wordList.innerHTML = '';
 
-    // Filter logic: case-insensitive
-    const filteredWords = database.filter(word =>
-        word.toLowerCase().includes(query.toLowerCase())
-    );
+    // Filter logic: in-order fuzzy match (also covers exact substring)
+    // Store matched indices alongside each word for highlighting later
+    const matches = [];
+    if (query === '') {
+        database.forEach(word => matches.push({ word, indices: null }));
+    } else {
+        database.forEach(word => {
+            const indices = fuzzyMatch(word, query);
+            if (indices) matches.push({ word, indices });
+        });
+    }
 
     // Update counter
     if (query === '') {
         countDisplay.textContent = `${database.length} contacts available`;
     } else {
-        countDisplay.textContent = `${filteredWords.length} result${filteredWords.length !== 1 ? 's' : ''} found`;
+        countDisplay.textContent = `${matches.length} result${matches.length !== 1 ? 's' : ''} found`;
     }
 
     // Toggle empty state
-    if (filteredWords.length === 0) {
+    if (matches.length === 0) {
         emptyState.classList.remove('hidden');
         wordList.classList.add('hidden');
         alphaRail.classList.add('hidden');
@@ -229,10 +280,10 @@ function renderList(query = '') {
 
     // Group words by first letter
     const groups = {};
-    filteredWords.forEach(word => {
-        const letter = word[0].toUpperCase();
+    matches.forEach(entry => {
+        const letter = entry.word[0].toUpperCase();
         if (!groups[letter]) groups[letter] = [];
-        groups[letter].push(word);
+        groups[letter].push(entry);
     });
 
     // Build list with section headers and items
@@ -248,7 +299,7 @@ function renderList(query = '') {
         wordList.appendChild(header);
 
         // Items in this group
-        groups[letter].forEach(word => {
+        groups[letter].forEach(entry => {
             const li = document.createElement('li');
             li.className = 'word-item';
 
@@ -264,12 +315,10 @@ function renderList(query = '') {
 
             // Word text (with highlight if searching)
             const textSpan = document.createElement('span');
-            if (query) {
-                const escaped = escapeRegex(query);
-                const regex = new RegExp(`(${escaped})`, 'gi');
-                textSpan.innerHTML = word.replace(regex, '<span class="highlight">$1</span>');
+            if (query && entry.indices) {
+                textSpan.innerHTML = highlightFuzzy(entry.word, entry.indices);
             } else {
-                textSpan.textContent = word;
+                textSpan.textContent = entry.word;
             }
             li.appendChild(textSpan);
 
@@ -324,6 +373,9 @@ function buildAlphaRail(activeLetters) {
 searchInput.addEventListener('input', (e) => {
     const value = e.target.value;
     renderList(value);
+
+    // Reset scroll to top so user always sees first results
+    listContainer.scrollTop = 0;
 
     // Toggle clear button
     if (value.length > 0) {
